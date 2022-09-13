@@ -6,16 +6,8 @@ void main() {
 
 class Todo extends StatelessWidget {
   @override
-  // App layout
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('To-do List'),
-        ),
-      )
-      
-    );
+    return MaterialApp(home: TodoList());
   }
 }
 
@@ -39,7 +31,7 @@ class _TodoListState extends State<TodoList> {
       body: ListView(children: _getItems()),
       // Button to add todos
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _displayDialog,
+        onPressed: () => _displayDialog(context),
         tooltip: 'Add Todo',
         child: Icon(Icons.add)),
     );
@@ -54,9 +46,104 @@ class _TodoListState extends State<TodoList> {
     _textFieldController.clear();
   }
 
+  // Function for deleting todos from the list
+  void _deleteTodoItem(String todo) {
+    setState(() {
+      _todoList.remove(todo);
+    });
+  }
+
+  // Function for deleting todos from the list
+  void _editTodoItem(String todo, String newTodo) {
+    int index = _todoList.indexOf(todo);
+    setState(() {
+      _todoList[index]=newTodo;
+    });
+  }
+
   // Function for rendering todo items
   Widget _buildTodoItem(String todo) {
-    return ListTile(title: Text(todo));
+    return Card(child:
+      ListTile(
+          title: Text(todo),
+          trailing: Wrap(children: <Widget> [
+            IconButton(
+              icon: Icon(Icons.create),
+              onPressed: () => _displayEditDialog(context, todo)
+            ),
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => _displayDeleteDialog(context, todo)
+            )
+          ])
+        )
+      );
+  }
+
+  // Display a dialog to edit the todo
+  Future<dynamic> _displayEditDialog(BuildContext context, String todo) async {
+    // change the app state to show a dialog
+    _textFieldController.text=todo;
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit todo'),
+          // Field for editing todo
+          content: TextField(
+            controller: _textFieldController),
+          // Components that have associated actions
+          actions: <Widget>[
+            // Confirm button
+            TextButton(
+              child: const Text('CONFIRM'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _editTodoItem(todo, _textFieldController.text);
+              }
+            ),
+            // Cancel button
+            TextButton(
+              child: const Text('CANCEL'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ]
+        );
+      }
+    );
+  }
+
+  // Display a dialog to delete the todo
+  Future<dynamic> _displayDeleteDialog(BuildContext context, String todo) async {
+    // change the app state to show a dialog
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete todo'),
+          // Components that have associated actions
+          actions: <Widget>[
+            // Confirm button
+            TextButton(
+              child: const Text('CONFIRM'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteTodoItem(todo);
+              }
+            ),
+            // Cancel button
+            TextButton(
+              child: const Text('CANCEL'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ]
+        );
+      }
+    );
   }
 
   // Display a dialog for the user to enter items
@@ -74,7 +161,7 @@ class _TodoListState extends State<TodoList> {
           actions: <Widget>[
             // Add button
             TextButton(
-              child: const Text('Add'),
+              child: const Text('ADD'),
               onPressed: () {
                 Navigator.of(context).pop();
                 _addTodoItem(_textFieldController.text);
