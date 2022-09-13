@@ -18,8 +18,8 @@ class TodoList extends StatefulWidget {
 
 class _TodoListState extends State<TodoList> {
   // Save list of todos
-  final List<String> _todoList = <String>[];
-  final List<int> _completionStatus = <int>[];
+  List<String> _todoList = <String>[];
+  List<int> _completionStatus = <int>[];
   // Input field for entering todos
   final TextEditingController _textFieldController = TextEditingController();
   @override
@@ -201,6 +201,29 @@ class _TodoListState extends State<TodoList> {
     for (int i=0; i< _todoList.length; i++) {
       _todoWidgets.add(_buildTodoItem(_todoList[i], _completionStatus[i]));
     }
+
+    _todoWidgets.add(
+      TextButton(
+        child: const Text('delete completed todos'),
+        onPressed: () {
+          List<String> todos = <String>[];
+          List<int> statuses = <int>[];
+
+          for (int i=_todoList.length-1; i>-1; i--) {
+            if (_completionStatus[i]==0) {
+              todos.add(_todoList[i]);
+              statuses.add(0);
+            }
+          }
+
+          setState(() {
+              _completionStatus=statuses;
+              _todoList=todos;
+          });
+        }
+        
+      )
+    );
 
     return _todoWidgets;
   }
