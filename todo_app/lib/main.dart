@@ -19,6 +19,7 @@ class TodoList extends StatefulWidget {
 class _TodoListState extends State<TodoList> {
   // Save list of todos
   final List<String> _todoList = <String>[];
+  final List<int> _completionStatus = <int>[];
   // Input field for entering todos
   final TextEditingController _textFieldController = TextEditingController();
   @override
@@ -42,14 +43,18 @@ class _TodoListState extends State<TodoList> {
     // Call of set state initiates a re-render
     setState(() {
       _todoList.add(todo);
+      _completionStatus.add(0);
     });
     _textFieldController.clear();
   }
 
   // Function for deleting todos from the list
   void _deleteTodoItem(String todo) {
+    int index = _todoList.indexOf(todo);
     setState(() {
       _todoList.remove(todo);
+      _completionStatus.removeAt(index);
+
     });
   }
 
@@ -62,10 +67,20 @@ class _TodoListState extends State<TodoList> {
   }
 
   // Function for rendering todo items
-  Widget _buildTodoItem(String todo) {
+  Widget _buildTodoItem(String todo, int status) {
     return Card(child:
       ListTile(
-          title: Text(todo),
+          leading: Checkbox(
+            value: status==0?false:true,
+            onChanged: (value) {
+              int index = _todoList.indexOf(todo);
+              setState(() {
+                _completionStatus[index]=_completionStatus[index]==0?1:0;
+              });
+            }
+          ),
+          title: Text(todo, 
+            style: TextStyle(decoration: status==0?null:TextDecoration.lineThrough)),
           trailing: Wrap(children: <Widget> [
             IconButton(
               icon: Icon(Icons.create),
@@ -183,8 +198,8 @@ class _TodoListState extends State<TodoList> {
   // Function that creates a list of tiles with the existing stored todos
   List<Widget> _getItems() {
     final List<Widget> _todoWidgets = <Widget>[];
-    for (String todo in _todoList) {
-      _todoWidgets.add(_buildTodoItem(todo));
+    for (int i=0; i< _todoList.length; i++) {
+      _todoWidgets.add(_buildTodoItem(_todoList[i], _completionStatus[i]));
     }
 
     return _todoWidgets;
